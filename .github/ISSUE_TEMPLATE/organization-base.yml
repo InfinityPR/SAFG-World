@@ -1,0 +1,21 @@
+name: Organization base request
+description: Request manual placement of a gang or squad base.
+title: "[Base] Organization name"
+labels: [organization-base]
+body:
+  - type: input
+    id: organization
+    attributes: {label: Organization name}
+    validations: {required: true}
+  - type: input
+    id: account
+    attributes: {label: Leader account, description: Your game account name only; never include passwords.}
+    validations: {required: true}
+  - type: textarea
+    id: location
+    attributes: {label: Entrance and map location, description: Include x/y/z/rotation and interior/dimension.}
+    validations: {required: true}
+  - type: textarea
+    id: submission
+    attributes: {label: Map PR and screenshots, description: Link the PR containing bases/ files and explain the intended placement.}
+    validations: {required: true}

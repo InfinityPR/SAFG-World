@@ -1,0 +1,10 @@
+{
+  "target": "vehicle",
+  "model": 411,
+  "kind": "livery",
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/1",
+  "textures": ["vehiclegrunge256"],
+  "fx": "livery.fx",
+  "image": "body.png",
+  "uniform": "gTexture"
+}
