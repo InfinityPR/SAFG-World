@@ -2,6 +2,10 @@
 
 Community submissions for SAFG:RPG. Fork this repository and open a pull request.
 
+**New here? [Read the step-by-step player guide](docs/PLAYER-GUIDE.md)** for
+forking, uploading shader files, opening a PR, requesting approval in game,
+and submitting organization bases. No command-line tools required.
+
 ## Organization bases — manual placement
 
 Use the **Organization base request** issue form. Include the organization name,

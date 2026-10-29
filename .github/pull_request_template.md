@@ -1,3 +1,5 @@
+Need help? Read the [player submission guide](https://github.com/InfinityPR/SAFG-World/blob/main/docs/PLAYER-GUIDE.md).
+
 ## Submission
 
 - Organization / account:
