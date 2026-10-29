@@ -73,8 +73,10 @@ shaders/my-swat-skin-v1/
 - The `.fx` file applies the texture or implements your custom effect. The
   [example livery.fx](../examples/livery.fx) can be used for a basic livery with
   the `gTexture` uniform.
-- A livery requires one PNG or DDS texture, at most **1024 × 1024 pixels** and
-  **4 MiB**. Match the model's texture layout (UVs); an arbitrary picture will
+- A livery requires one PNG or DDS texture: at most **512 × 512 pixels for
+  vehicles**, or **256 × 256 pixels for skins**. Both width and height must fit
+  the limit; smaller and rectangular textures are allowed. The file must also
+  stay within **4 MiB**. Match the model's texture layout (UVs); an arbitrary picture will
   not automatically fit the skin or vehicle.
 - FX must be UTF-8 text, at most **128 KiB**. Custom effects need testing in MTA;
   passing the file checks does not prove an effect is fast or visually correct.

@@ -60,7 +60,9 @@ def read_release(folder):
             with Image.open(folder/spec['image']) as decoded:
                 require(decoded.format in ('PNG','DDS'),'Only PNG/DDS textures are allowed')
                 width,height=decoded.size
-                require(1<=width<=1024 and 1<=height<=1024,'Textures must be at most 1024x1024')
+                maximum=256 if target=='skin' else 512
+                require(1<=width<=maximum and 1<=height<=maximum,
+                    f'{target.capitalize()} textures must be at most {maximum}x{maximum}')
                 decoded.load()
         files[spec['image']]=image
         release['image']={'path':'assets/'+folder.name+'/'+spec['image'],'sha256':hashlib.sha256(image).hexdigest(),'width':width,'height':height}

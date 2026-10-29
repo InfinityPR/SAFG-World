@@ -39,7 +39,8 @@ must remain available for existing approved players. Do not replace/delete old
 assets. The importer pins commits and hashes; changing bytes cannot silently
 replace someone else's approved shader.
 
-Limits: 128 KiB UTF-8 FX, one PNG/DDS texture up to 1024×1024 / 4 MiB, 1–8
+Limits: 128 KiB UTF-8 FX, one PNG/DDS texture up to **512×512 for vehicles** or
+**256×256 for skins**, with a 4 MiB file-size ceiling, 1–8
 explicit texture names/patterns (never a lone `*`). No Lua, JavaScript, DFF/TXD,
 executables, remote URLs, credentials or payment details in shader submissions.
 Texture validation is not proof that an arbitrary FX is fast or crash-free;
