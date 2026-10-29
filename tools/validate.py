@@ -97,7 +97,28 @@ def lua(value):
     raise ValueError('Unsupported catalog value')
 
 
-def publish(world,resource):
+def github(path):
+    return json.loads(subprocess.check_output(['gh','api','repos/'+REPOSITORY+'/'+path],text=True))
+
+
+def verify_merge(world,key,release,files):
+    number=release['github'].rsplit('/',1)[1]
+    pull=github('pulls/'+number)
+    require(pull.get('merged') is True and pull.get('merged_by',{}).get('login')=='InfinityPR'
+        and pull.get('base',{}).get('ref')=='main'
+        and pull.get('base',{}).get('repo',{}).get('full_name')==REPOSITORY,
+        'Shader PR must be merged into SAFG-World main by InfinityPR: '+key)
+    require(type(pull.get('changed_files'))is int and pull['changed_files']<=100,'Submit at most 100 changed files per PR')
+    records=github('pulls/'+number+'/files?per_page=100')
+    require(isinstance(records,list),'PR file inventory is unavailable')
+    approved={record['filename']:record.get('sha') for record in records if record.get('status')in ('added','modified')}
+    expected={'request.json':(world/'shaders'/key/'request.json').read_bytes(),**files}
+    for name,content in expected.items():
+        blob=hashlib.sha1(b'blob '+str(len(content)).encode()+b'\0'+content).hexdigest()
+        require(approved.get('shaders/'+key+'/'+name)==blob,'Merged PR does not contain these exact asset bytes: '+key+'/'+name)
+
+
+def publish(world,resource,verify_github=False):
     world=Path(world).resolve();resource=Path(resource).resolve()
     releases=validate(world)
     statefile=resource/'world-catalog.json'
@@ -110,6 +131,7 @@ def publish(world,resource):
         require(not old or old['fingerprint']==fingerprint,'Release keys are immutable; submit a new key/version: '+key)
         if old:commit=old['commit']
         else:
+            if verify_github:verify_merge(world,key,release,files)
             paths=['shaders/'+key+'/request.json']+['shaders/'+key+'/'+name for name in files]
             commit=subprocess.check_output(['git','-C',str(world),'log','-1','--format=%H','--',*paths],text=True).strip()
         require(HEX.fullmatch(commit),'The release assets must be committed to Git')
@@ -130,10 +152,10 @@ def publish(world,resource):
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--world',type=Path,required=True);parser.add_argument('--resource',type=Path)
+    parser=argparse.ArgumentParser();parser.add_argument('--world',type=Path,required=True);parser.add_argument('--resource',type=Path);parser.add_argument('--verify-github',action='store_true')
     args=parser.parse_args()
     try:
-        if args.resource:publish(args.world,args.resource)
+        if args.resource:publish(args.world,args.resource,args.verify_github)
         else:print('Validated',len(validate(args.world)),'shader submissions.')
     except (ValueError,OSError,KeyError,TypeError,json.JSONDecodeError,subprocess.CalledProcessError) as error:
         raise SystemExit('SAFG World validation failed: '+str(error))
