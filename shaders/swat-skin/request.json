@@ -2,7 +2,8 @@
   "target": "skin",
   "model": 285,
   "kind": "livery",
-  "github": "https://github.com/InfinityPR/SAFG-World/pull/1#issue-6091377886",
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/1",
+  "textures": ["swat"],
   "fx": "livery.fx",
   "image": "swat.png",
   "uniform": "gTexture"
