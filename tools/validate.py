@@ -19,6 +19,13 @@ TEXTURE = re.compile(r'[A-Za-z0-9_.*?-]{1,64}\Z')
 UNIFORM = re.compile(r'[A-Za-z_][A-Za-z0-9_]{0,63}\Z')
 HEX = re.compile(r'[0-9a-f]{40}\Z')
 
+# Server-supplied stock livery; standard textures never need an uploaded FX.
+BUILTIN_LIVERY = b"""texture gTexture;
+sampler LiverySampler = sampler_state { Texture=<gTexture>; MinFilter=Linear; MagFilter=Linear; MipFilter=Linear; };
+float4 livery(float2 uv:TEXCOORD0):COLOR0 { return tex2D(LiverySampler,uv); }
+technique SAFGLivery { pass P0 { AlphaBlendEnable=TRUE; SrcBlend=SRCALPHA; DestBlend=INVSRCALPHA; ZWriteEnable=FALSE; DepthBias=-0.0002; PixelShader=compile ps_2_0 livery(); } }
+"""
+
 
 def require(condition, message):
     if not condition:
@@ -46,13 +53,20 @@ def read_release(folder):
     require(isinstance(textures,list) and 1<=len(textures)<=8 and all(isinstance(v,str) for v in textures) and len(set(textures))==len(textures),'Use 1-8 distinct target textures')
     require(all(isinstance(v,str) and TEXTURE.fullmatch(v) and v!='*' for v in textures),'Invalid texture target; a lone wildcard is forbidden')
     require(spec.get('uniform') is None or isinstance(spec['uniform'],str) and UNIFORM.fullmatch(spec['uniform']),'Invalid texture uniform')
-    fx=data_file(folder,spec.get('fx'),{'.fx'},131072)
+    automatic=kind=='livery' and spec.get('fx') is None
+    if automatic:
+        require(spec.get('uniform') in (None,'gTexture'),'The automatic livery uses gTexture')
+        fx=BUILTIN_LIVERY
+        files={}
+    else:
+        fx=data_file(folder,spec.get('fx'),{'.fx'},131072)
+        files={spec['fx']:fx}
     require(b'\x00' not in fx,'FX must be text')
     fx.decode('utf-8')
-    files={spec['fx']:fx}
     release={key:spec[key] for key in ('model','target','kind','github','textures')}
-    release.update(integrated=True,fx={'path':'assets/'+folder.name+'/'+spec['fx'],'sha256':hashlib.sha256(fx).hexdigest()})
-    if spec.get('uniform'):release['uniform']=spec['uniform']
+    release.update(integrated=True,fx={'path':'assets/livery.fx' if automatic else 'assets/'+folder.name+'/'+spec['fx'],'sha256':hashlib.sha256(fx).hexdigest()})
+    if automatic:release['uniform']='gTexture'
+    elif spec.get('uniform'):release['uniform']=spec['uniform']
     if spec.get('image'):
         image=data_file(folder,spec['image'],{'.png','.dds'},4*1024*1024)
         with warnings.catch_warnings():
@@ -126,7 +140,9 @@ def publish(world,resource,verify_github=False):
     statefile=resource/'world-catalog.json'
     previous=json.loads(statefile.read_text()) if statefile.exists() else {}
     require(set(previous)<=set(releases),'Merged releases cannot be deleted; existing approvals must remain usable')
-    catalog={};state={};assets={}
+    catalog={};state={};assets={'assets/livery.fx':BUILTIN_LIVERY}
+    shared=resource/'assets/livery.fx'
+    require(not shared.exists() or shared.read_bytes()==BUILTIN_LIVERY,'Shared livery.fx differs from the built-in template')
     # Complete validation and immutable-key checks before changing any output.
     for key,(release,files,fingerprint) in releases.items():
         old=previous.get(key)
@@ -137,16 +153,39 @@ def publish(world,resource,verify_github=False):
             paths=['shaders/'+key+'/request.json']+['shaders/'+key+'/'+name for name in files]
             commit=subprocess.check_output(['git','-C',str(world),'log','-1','--format=%H','--',*paths],text=True).strip()
         require(HEX.fullmatch(commit),'The release assets must be committed to Git')
+        # Fingerprints describe reviewed submission bytes. Moving deployed files
+        # into category folders must not invalidate existing approvals/pinned commits.
+        prefix='assets/'+('players' if release['target']=='skin' else 'vehicles')+'/'+key+'/'
+        shared_fx=release['kind']=='livery' and release['fx']['sha256']==hashlib.sha256(BUILTIN_LIVERY).hexdigest() and release.get('uniform') in (None,'gTexture')
+        fx_name=release['fx']['path'].rsplit('/',1)[1]
+        release['fx']['path']='assets/livery.fx' if shared_fx else prefix+fx_name
+        if shared_fx:release['uniform']='gTexture'
+        if 'image' in release:release['image']['path']=prefix+release['image']['path'].rsplit('/',1)[1]
+        require(all(len(release[field]['path'])<=160 for field in ('fx','image')if field in release),'Deployed asset path is too long')
         release['commit']=commit;catalog[key]=release;state[key]={'fingerprint':fingerprint,'commit':commit}
-        for name,content in files.items():assets['assets/'+key+'/'+name]=content
+        for name,content in files.items():
+            if not(shared_fx and name==fx_name):assets[prefix+name]=content
     meta=ET.parse(resource/'meta.xml')
+    old_assets=[]
+    prefixes=[base+key+'/' for key in set(previous)|set(catalog) for base in ('assets/','assets/players/','assets/vehicles/')]
     for node in list(meta.getroot().findall('file')):
-        if any((node.get('src')or '').startswith('assets/'+key+'/') for key in set(previous)|set(catalog)):meta.getroot().remove(node)
+        name=node.get('src')or ''
+        if any(name.startswith(prefix) for prefix in prefixes):
+            old_assets.append(name);meta.getroot().remove(node)
+    # Shared shader is declared once, whether or not a submission supplies FX.
+    for node in list(meta.getroot().findall('file')):
+        if node.get('src')=='assets/livery.fx':meta.getroot().remove(node)
     for asset in sorted(assets):ET.SubElement(meta.getroot(),'file',{'src':asset})
     for name,content in assets.items():
         destination=resource/name
         require(not destination.is_symlink() and not any(p.is_symlink() for p in destination.parents if p!=resource.parent),'Output cannot contain symlinks')
         destination.parent.mkdir(parents=True,exist_ok=True);destination.write_bytes(content)
+    for name in old_assets:
+        old=resource/name
+        if name not in assets and old.is_file() and not old.is_symlink():
+            old.unlink()
+            try:old.parent.rmdir()
+            except OSError:pass
     (resource/'releases.lua').write_text('-- Generated from reviewed SAFG-World submissions. Do not edit by hand.\nSAFGShaderReleases='+lua(catalog)+'\n')
     statefile.write_text(json.dumps(state,sort_keys=True,indent=2)+'\n')
     ET.indent(meta,space=' ');meta.write(resource/'meta.xml',encoding='unicode')

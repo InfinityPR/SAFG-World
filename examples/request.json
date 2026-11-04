@@ -3,8 +3,9 @@
   "model": 411,
   "kind": "livery",
   "github": "https://github.com/InfinityPR/SAFG-World/pull/1",
-  "textures": ["vehiclegrunge256"],
-  "fx": "livery.fx",
+  "textures": [
+    "vehiclegrunge256"
+  ],
   "image": "body.png",
   "uniform": "gTexture"
 }

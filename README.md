@@ -49,3 +49,9 @@ maintainers must test custom effects in MTA before merging.
 Run `python -m pip install -r tools/requirements.txt` then
 `python tools/validate.py --world .` to check shader data. CI validates submissions
 without deployment secrets. Bases are never included in automatic shader imports.
+
+Standard skin/vehicle liveries only require `request.json` plus one PNG/DDS.
+Omit the `fx` property: the server supplies its shared `livery.fx` automatically.
+Custom FX effects still need their reviewed shader file. See
+[the image-only skin example](examples/skin-request.json). Existing immutable
+releases must remain unchanged; submit a new release key for changes.

@@ -65,14 +65,13 @@ For a paint/livery submission, your folder should look like this:
 ```text
 shaders/my-swat-skin-v1/
     request.json
-    livery.fx
     swat.png
 ```
 
 - `request.json` describes the model, texture targets, and files.
-- The `.fx` file applies the texture or implements your custom effect. The
-  [example livery.fx](../examples/livery.fx) can be used for a basic livery with
-  the `gTexture` uniform.
+- Standard liveries need no `.fx` upload. Omit `fx` from request.json; the server
+  automatically supplies its shared `livery.fx` and `gTexture` binding. Custom
+  `kind: effect` submissions still need their own reviewed `.fx` file.
 - A livery requires one PNG or DDS texture: at most **512 × 512 pixels for
   vehicles**, or **256 × 256 pixels for skins**. Both width and height must fit
   the limit; smaller and rectangular textures are allowed. The file must also
@@ -101,7 +100,6 @@ The working [SWAT submission](../shaders/swat-skin/request.json) uses skin model
   "kind": "livery",
   "github": "https://github.com/InfinityPR/SAFG-World/pull/123",
   "textures": ["swat"],
-  "fx": "livery.fx",
   "image": "swat.png",
   "uniform": "gTexture"
 }
@@ -117,7 +115,7 @@ reuse the example's PR or the already-published `swat-skin` release key.
 | `kind` | `livery` for paint/texture, or `effect` for a custom FX effect |
 | `github` | Your PR's exact URL in the official InfinityPR/SAFG-World repository |
 | `textures` | The actual texture names/patterns to which your shader applies |
-| `fx` | Your local FX filename, including `.fx` |
+| `fx` | Omit for a standard livery; required local `.fx` filename for a custom effect |
 | `image` | Your local PNG/DDS filename; required for liveries |
 | `uniform` | The image input variable used by your FX; `gTexture` for the provided livery template |
 
