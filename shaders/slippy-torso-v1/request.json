@@ -1,0 +1,12 @@
+
+{
+  "target": "skin",
+  "model": 0,
+  "kind": "livery",
+  "github": "",
+  "textures": [
+    "player_torsoa"
+  ],
+  "image": "torso.png",
+  "uniform": "gTexture"
+}
