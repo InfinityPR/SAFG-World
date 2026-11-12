@@ -1,0 +1,11 @@
+
+{
+  "target": "skin",
+  "model": 0,
+  "kind": "livery",
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/2",
+  "textures": [
+    "player_torsoa"
+  ],
+  "image": "torso.png"
+}
