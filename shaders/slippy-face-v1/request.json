@@ -3,10 +3,9 @@
   "target": "skin",
   "model": 0,
   "kind": "livery",
-  "github": "",
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/2",
   "textures": [
     "cj_face"
   ],
-  "image": "face.png",
-  "uniform": "gTexture"
+  "image": "face.png"
 }
