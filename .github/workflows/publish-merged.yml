@@ -1,0 +1,31 @@
+name: Publish merged shaders
+on:
+  pull_request_target:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+# No checkout or PR-provided code runs with this credential.
+permissions: {}
+concurrency:
+  group: shader-publisher-dispatch
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: >-
+      github.repository == 'InfinityPR/SAFG-World' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.pull_request.merged == true &&
+        github.event.pull_request.merged_by.login == 'InfinityPR'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Start the private shader publisher
+        env:
+          GH_TOKEN: ${{ secrets.SAFG_SHADER_PUBLISH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo '::error::Add SAFG_SHADER_PUBLISH_TOKEN to this repository: a fine-grained token for InfinityPR/safg-server with Actions write access only.'
+            exit 1
+          fi
+          gh workflow run sync-world-shaders.yml --repo InfinityPR/safg-server --ref main
