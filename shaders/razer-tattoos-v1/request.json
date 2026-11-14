@@ -1,0 +1,10 @@
+{
+  "target": "skin",
+  "model": 0,
+  "kind": "livery",
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/3",
+  "textures": [
+    "player_torsoa"
+  ],
+  "image": "razer-tattoos.png"
+}
