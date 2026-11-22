@@ -1,0 +1,10 @@
+{
+  "target": "skin",
+  "model": 2,
+  "kind": "livery",
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/7",
+  "textures": [
+    "maccer"
+  ],
+  "image": "Witz.png"
+}
