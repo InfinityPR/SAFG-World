@@ -1,0 +1,10 @@
+{
+  "target": "skin",
+  "model": 298,
+  "kind": "livery",
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/32",
+  "textures": [
+    "cat"
+  ],
+  "image": "iguncata.png"
+}
