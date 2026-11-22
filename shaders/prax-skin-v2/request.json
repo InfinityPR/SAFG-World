@@ -1,0 +1,10 @@
+{
+  "target": "skin",
+  "model": 234,
+  "kind": "livery",
+  "github": "https://github.com",
+  "textures": [
+    "swmocd"
+  ],
+  "image": "swmocd.png"
+}
