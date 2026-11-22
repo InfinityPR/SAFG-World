@@ -2,7 +2,7 @@
   "target": "skin",
   "model": 2,
   "kind": "livery",
-  "github": "https://github.com/InfinityPR/SAFG-World/pull/7",
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/35",
   "textures": [
     "maccer"
   ],
