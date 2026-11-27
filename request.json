@@ -1,0 +1,9 @@
+  "organization": "Rogue_21",
+  "target": "skin",
+  "kind": "livery",
+  "model": 312,
+  "github": "https://github.com/InfinityPR/SAFG-World/pull/42",
+  "textures": [
+    "psycho"
+  ],
+  "image": "rogskindds.dds"
